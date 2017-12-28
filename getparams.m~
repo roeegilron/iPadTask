@@ -8,12 +8,7 @@ params.movement    = 5.0; % time for each movement
 params.step        = 4.0; % number of steps (reaches)  
 
 params.targetloc   = [-0.8 0.0; ...
-                      +0.8 0.0; ... 
-                       0.0 -0.8;...
-                       0.0 +0.8];
-                   
-params.targetloc   = [-0.8 0.0; ...
-                       +0.8 0.0];
+                      +0.8 0.0; ... ];
 params.states      = {'fixation','preperation','movement'}; % states have actionable consequences
 params.screensize  = get(groot,'ScreenSize');
 end

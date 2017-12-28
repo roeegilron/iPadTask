@@ -1,10 +1,9 @@
 function MAIN()
 hfig = setupExperiment();
-
 end
 
 function hfig = setupExperiment()
-hfig = setupExperiment();
+addpath(genpath(fullfile(pwd,'toolboxes')));
 params = getparams();
 handles = struct();
 hfig = figure('UserData',handles); 
@@ -14,20 +13,13 @@ hsub = axis();
 hold on; 
 axis off 
 grid off 
+screen = get(0,'ScreenSize');
+hfig.OuterPosition = [0 0 screen(3), screen(4)+100];
 hfig.Units = 'normalized';
-hfig.outerposition = [0 0 1 1];
-hfig.s
- % get the figure and axes handles
- hFig = gcf;
- hAx  = gca;
- % set the figure to full screen
- set(hFig,'units','normalized','outerposition',[0 0 1 1]);
- % set the axes to full screen
- set(hAx,'Unit','normalized','Position',[0 0 1 1]);
- % hide the toolbar
- set(hFig,'menubar','none')
- % to hide the title
- set(hFig,'NumberTitle','off');
+
+undecorateFig(hfig);
+% hfig.MenuBar = 'none';
+% hfig.NumberTitle = 'off';
 
  
 
@@ -49,27 +41,62 @@ ylim([-1 1]);
 drawnow;
 
 %% run one trial button  
-hrunOneTrial = uicontrol(hfig); 
-hrunOneTrial.Style = 'pushbutton';
-hrunOneTrial.String = 'Run One Trial'; 
-hrunOneTrial.Callback = @runOneTrial;
-hrunOneTrial.Units = 'normalized';
-hrunOneTrial.Position = [0.8 0 0.2 0.1];
+hrunOneTrial = text(gca,1,-1,'Run One Trial');
+hrunOneTrial.Rotation = 90;
+hrunOneTrial.FontSize = 20;
+hrunOneTrial.EdgeColor = [0.8 0.8 0.8];
+hrunOneTrial.BackgroundColor = [0.9 0.9 0.9];
+hrunOneTrial.LineWidth = 2;
+hrunOneTrial.Margin = 15;
+hrunOneTrial.ButtonDownFcn = @runOneTrial;
 hfig.UserData.handles.hrunOneTrial = hrunOneTrial;
 %% run experiment 
-hrunExperiment = uicontrol(hfig); 
-hrunExperiment.Style = 'pushbutton';
-hrunExperiment.String = 'Run Experiment'; 
-hrunExperiment.Callback = @runExperiment;
-hrunExperiment.Units = 'normalized';
-hrunExperiment.Position = [0.2 0 0.2 0.1];
-myDataStr = evalc('disp(params)');
-myDataStr2 = strrep(myDataStr, sprintf('\n'), '<br />');
-set(hrunExperiment, 'TooltipString', ['<html><pre><font face="courier new">' myDataStr2 '</font>'])
+hrunOneTrial = text(gca,1,0.7,'Run Experiment');
+hrunOneTrial.Rotation = 90;
+hrunOneTrial.FontSize = 20;
+hrunOneTrial.EdgeColor = [0.8 0.8 0.8];
+hrunOneTrial.BackgroundColor = [0.9 0.9 0.9];
+hrunOneTrial.LineWidth = 2;
+hrunOneTrial.Margin = 15;
+hrunExperiment.ButtonDownFcn = @runExperiment;
+hfig.UserData.handles.hrunOneTrial = hrunOneTrial;
+
+% myDataStr = evalc('disp(params)');
+% myDataStr2 = strrep(myDataStr, sprintf('\n'), '<br />');
+% set(hrunExperiment, 'TooltipString', ['<html><pre><font face="courier new">' myDataStr2 '</font>'])
 hfig.UserData.handles.hrunExperiment = hrunExperiment;
+
+%% close figure 
+hrunOneTrial = text(gca,1,0.7,'Run Experiment');
+hrunOneTrial.Rotation = 90;
+hrunOneTrial.FontSize = 20;
+hrunOneTrial.EdgeColor = [0.8 0.8 0.8];
+hrunOneTrial.BackgroundColor = [0.9 0.9 0.9];
+hrunOneTrial.LineWidth = 2;
+hrunOneTrial.Margin = 15;
+hrunOneTrial.ButtonDownFcn = @runExperiment;
+hfig.UserData.handles.hrunOneTrial = hrunOneTrial;
+
+hClose = uicontrol(hfig); 
+hClose.Style = 'pushbutton';
+hClose.String = 'Close Fig'; 
+hClose.Callback = @closeFigure;
+hClose.Units = 'normalized';
+hClose.Position = [0.15 0.9 0.1 0.05];
+set(hClose, 'TooltipString','Close the figure window')
+hfig.UserData.handles.hClose = hClose;
+
+drawnow;
 end
 
-function runExperiment(hfig,params)
+function closeFigure(obj,event)
+hfig = gcf;
+delete(hfig);
+end
+
+function runExperiment(obj,event)
+hfig = gcf;
+params = hfig.handles.params;
 %% set loop 
 hfig.UserData.handles.startT = tic;
 for i = 1:params.trials % loop on trials 

@@ -41,33 +41,39 @@ ylim([-1 1]);
 drawnow;
 
 %% run one trial button  
-hrunOneTrial = uicontrol(hfig); 
-hrunOneTrial.Style = 'pushbutton';
-hrunOneTrial.String = 'Run One Trial'; 
-hrunOneTrial.Callback = @runOneTrial;
-hrunOneTrial.Units = 'normalized';
-hrunOneTrial.Position = [0.75 0.05 0.1 0.05];
+hrunOneTrial = text(gca,1,-1,'Run One Trial');
+hrunOneTrial.Rotation = 90;
+hrunOneTrial.FontSize = 20;
+hrunOneTrial.EdgeColor = [0.8 0.8 0.8];
+hrunOneTrial.BackgroundColor = [0.9 0.9 0.9];
+hrunOneTrial.LineWidth = 2;
+hrunOneTrial.Margin = 15;
+hrunOneTrial.ButtonDownFcn = @runOneTrial;
 hfig.UserData.handles.hrunOneTrial = hrunOneTrial;
 %% run experiment 
-hrunExperiment = uicontrol(hfig); 
-hrunExperiment.Style = 'pushbutton';
-hrunExperiment.String = 'Run Experiment'; 
-hrunExperiment.Callback = @runExperiment;
-hrunExperiment.Units = 'normalized';
-hrunExperiment.Position = [0.15 0.05 0.1 0.05];
-myDataStr = evalc('disp(params)');
-myDataStr2 = strrep(myDataStr, sprintf('\n'), '<br />');
-set(hrunExperiment, 'TooltipString', ['<html><pre><font face="courier new">' myDataStr2 '</font>'])
+hrunExperiment = text(gca,1,0.7,'Run Experiment');
+hrunExperiment.Rotation = 90;
+hrunExperiment.FontSize = 20;
+hrunExperiment.EdgeColor = [0.8 0.8 0.8];
+hrunExperiment.BackgroundColor = [0.9 0.9 0.9];
+hrunExperiment.LineWidth = 2;
+hrunExperiment.Margin = 15;
+hrunExperiment.ButtonDownFcn = @runExperiment;
 hfig.UserData.handles.hrunExperiment = hrunExperiment;
 
+% myDataStr = evalc('disp(params)');
+% myDataStr2 = strrep(myDataStr, sprintf('\n'), '<br />');
+% set(hrunExperiment, 'TooltipString', ['<html><pre><font face="courier new">' myDataStr2 '</font>'])
+
 %% close figure 
-hClose = uicontrol(hfig); 
-hClose.Style = 'pushbutton';
-hClose.String = 'Close Fig'; 
-hClose.Callback = @closeFigure;
-hClose.Units = 'normalized';
-hClose.Position = [0.15 0.9 0.1 0.05];
-set(hClose, 'TooltipString','Close the figure window')
+hClose = text(gca,-1,-1,'Close Experiment');
+hClose.Rotation = 90;
+hClose.FontSize = 20;
+hClose.EdgeColor = [0.8 0.8 0.8];
+hClose.BackgroundColor = [0.9 0.9 0.9];
+hClose.LineWidth = 2;
+hClose.Margin = 15;
+hClose.ButtonDownFcn = @closeFigure;
 hfig.UserData.handles.hClose = hClose;
 
 drawnow;
