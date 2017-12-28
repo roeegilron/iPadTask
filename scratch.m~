@@ -1,0 +1,9 @@
+function scratch
+hfig = figure; 
+hfig.Units = 'normalized'
+start = tic; 
+htar = uicontrol(hfig);
+htar.Units = 'normalized';
+htar.Position = [ 0.5  0.9 0.1 0.1];
+htext = uicontrol(hfig);
+end
