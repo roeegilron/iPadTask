@@ -3,6 +3,7 @@ hfig = setupExperiment();
 end
 
 function hfig = setupExperiment()
+addpath(genpath(fullfile(pwd,'toolboxes')));
 params = getparams();
 handles = struct();
 hfig = figure('UserData',handles); 
@@ -12,8 +13,9 @@ hsub = axis();
 hold on; 
 axis off 
 grid off 
+screen = get(0,'ScreenSize');
+hfig.OuterPosition = [0 0 screen(3), screen(4)+100];
 hfig.Units = 'normalized';
-hfig.OuterPosition = [0 0 1 1];
 
 undecorateFig(hfig);
 % hfig.MenuBar = 'none';
@@ -44,7 +46,7 @@ hrunOneTrial.Style = 'pushbutton';
 hrunOneTrial.String = 'Run One Trial'; 
 hrunOneTrial.Callback = @runOneTrial;
 hrunOneTrial.Units = 'normalized';
-hrunOneTrial.Position = [0.8 0 0.2 0.1];
+hrunOneTrial.Position = [0.75 0.05 0.1 0.05];
 hfig.UserData.handles.hrunOneTrial = hrunOneTrial;
 %% run experiment 
 hrunExperiment = uicontrol(hfig); 
@@ -52,7 +54,7 @@ hrunExperiment.Style = 'pushbutton';
 hrunExperiment.String = 'Run Experiment'; 
 hrunExperiment.Callback = @runExperiment;
 hrunExperiment.Units = 'normalized';
-hrunExperiment.Position = [0.2 0 0.2 0.1];
+hrunExperiment.Position = [0.15 0.05 0.1 0.05];
 myDataStr = evalc('disp(params)');
 myDataStr2 = strrep(myDataStr, sprintf('\n'), '<br />');
 set(hrunExperiment, 'TooltipString', ['<html><pre><font face="courier new">' myDataStr2 '</font>'])
@@ -64,7 +66,7 @@ hClose.Style = 'pushbutton';
 hClose.String = 'Close Fig'; 
 hClose.Callback = @closeFigure;
 hClose.Units = 'normalized';
-hClose.Position = [0 0.9 0.1 0.05];
+hClose.Position = [0.15 0.9 0.1 0.05];
 set(hClose, 'TooltipString','Close the figure window')
 hfig.UserData.handles.hClose = hClose;
 
