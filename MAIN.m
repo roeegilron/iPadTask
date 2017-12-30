@@ -1,5 +1,8 @@
 function MAIN()
 hfig = setupExperiment();
+%% jitter time line 
+%% multiple targets 
+
 end
 
 function hfig = setupExperiment()
@@ -51,7 +54,7 @@ hrunOneTrial.Margin = 15;
 hrunOneTrial.ButtonDownFcn = @runOneTrial;
 hfig.UserData.handles.hrunOneTrial = hrunOneTrial;
 %% run experiment 
-hrunExperiment = text(gca,1,0.7,'Run Experiment');
+hrunExperiment = text(gca,1,0.6,'Run Experiment');
 hrunExperiment.Rotation = 90;
 hrunExperiment.FontSize = 20;
 hrunExperiment.EdgeColor = [0.8 0.8 0.8];
