@@ -89,7 +89,7 @@ end
 
 function runExperiment(obj,event)
 hfig = gcf;
-params = hfig.handles.params;
+params = hfig.UserData.handles.params;
 %% set loop 
 hfig.UserData.handles.startT = tic;
 for i = 1:params.trials % loop on trials 
