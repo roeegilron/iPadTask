@@ -52,8 +52,17 @@ classdef BioSemiSerialPort
             disp([obj.props.keys', obj.props.values']);  % display as a cell-array
         end
         function obj = BioSemiSerialPort(~)
+            try 
+                objj = instrfind;
+                if ~isempty(objj)
+                    delete(objj);
+                end
+            catch aExceptiojn 
+                rethrow(aExceptiojn)
+            end
+            
+                
             sp = [];
-            instrreset
             serialInfo = instrhwinfo('serial');
             avportst = serialInfo.AvailableSerialPorts;
             pnms = obj.getPortNames;
