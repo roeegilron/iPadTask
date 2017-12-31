@@ -12,23 +12,34 @@ handles = struct();
 hfig = figure('UserData',handles); 
 hfig.UserData.handles.params = params; 
 hfig.UserData.handles.state = 1; % fixation;
-hsub = axis();
+hax = axes();
+hax.Units = 'normalized';
+hax.Box = 'off';
+hax.XTick = [];
+hax.YTick = [];
 hold on; 
 axis off 
 grid off 
 screen = get(0,'ScreenSize');
-hfig.OuterPosition = [0 0 screen(3), screen(4)+100];
 hfig.Units = 'normalized';
-
+hax.Position = [0 0 1 1]; % make axes take up whole screen 
+hfig.OuterPosition = [0 0 screen(3), screen(4)+40];
 undecorateFig(hfig);
-% hfig.MenuBar = 'none';
-% hfig.NumberTitle = 'off';
+xlim([0 1]); 
+ylim([0 1]);
+%% setup trigger 
+hfig.UserData.handles.sp = BioSemiSerialPort();
+%% setup log file 
+fn = sprintf('ipadtask_%s.txt', strrep(datestr(clock,31),':','-'));
 
- 
+mkdir(fullfile('..','logs'));
+ffn = fullfile('..','logs',fn);
+fid = fopen(ffn,'w+'); 
+hfig.UserData.handles.fid = fid; 
 
 dat.pressed = 0;
 %% fixation 
-hsca = scatter(0,0,params.size,'filled','MarkerFaceColor','r',...
+hsca = scatter(0.5,0.5,params.size,'filled','MarkerFaceColor','r',...
     'ButtonDownFcn',@fixpressed,...
     'UserData',dat,...
     'Visible','on');
@@ -39,12 +50,8 @@ htar = scatter(0.8,0,params.size,'filled','MarkerFaceColor','b',...
     'UserData',dat,...
     'Visible','off');
 hfig.UserData.handles.htar = htar; 
-xlim([-1 1]); 
-ylim([-1 1]);
-drawnow;
-
 %% run one trial button  
-hrunOneTrial = text(gca,1,-1,'Run One Trial');
+hrunOneTrial = text(gca,0.9,0.1,'Run One Trial');
 hrunOneTrial.Rotation = 90;
 hrunOneTrial.FontSize = 20;
 hrunOneTrial.EdgeColor = [0.8 0.8 0.8];
@@ -54,7 +61,7 @@ hrunOneTrial.Margin = 15;
 hrunOneTrial.ButtonDownFcn = @runOneTrial;
 hfig.UserData.handles.hrunOneTrial = hrunOneTrial;
 %% run experiment 
-hrunExperiment = text(gca,1,0.6,'Run Experiment');
+hrunExperiment = text(gca,0.9,0.8,'Run Experiment');
 hrunExperiment.Rotation = 90;
 hrunExperiment.FontSize = 20;
 hrunExperiment.EdgeColor = [0.8 0.8 0.8];
@@ -64,12 +71,23 @@ hrunExperiment.Margin = 15;
 hrunExperiment.ButtonDownFcn = @runExperiment;
 hfig.UserData.handles.hrunExperiment = hrunExperiment;
 
+%% run experiment 
+hTestTrigger = text(gca,0.9,0.4,'Test Trigger');
+hTestTrigger.Rotation = 90;
+hTestTrigger.FontSize = 20;
+hTestTrigger.EdgeColor = [0.8 0.8 0.8];
+hTestTrigger.BackgroundColor = [0.9 0.9 0.9];
+hTestTrigger.LineWidth = 2;
+hTestTrigger.Margin = 15;
+hTestTrigger.ButtonDownFcn = @TestTrigger;
+hfig.UserData.handles.hTestTrigger = hTestTrigger;
+
 % myDataStr = evalc('disp(params)');
 % myDataStr2 = strrep(myDataStr, sprintf('\n'), '<br />');
 % set(hrunExperiment, 'TooltipString', ['<html><pre><font face="courier new">' myDataStr2 '</font>'])
 
 %% close figure 
-hClose = text(gca,-1,-1,'Close Experiment');
+hClose = text(gca,0.05,0.05,'x');
 hClose.Rotation = 90;
 hClose.FontSize = 20;
 hClose.EdgeColor = [0.8 0.8 0.8];
@@ -82,9 +100,23 @@ hfig.UserData.handles.hClose = hClose;
 drawnow;
 end
 
+function TestTrigger(obj,event)
+hfig = gcf;
+hfig.UserData.handles.sp.testTriggers
+end
+
 function closeFigure(obj,event)
 hfig = gcf;
-delete(hfig);
+fid = hfig.UserData.handles.fid;
+sp  = hfig.UserData.handles.sp;
+delete(hfig); 
+try
+    fclose(fid);
+    fclose(sp);
+catch
+    warning('issues with closing serial port and or log file');
+end
+
 end
 
 function runExperiment(obj,event)
@@ -214,8 +246,7 @@ switch task
     case 'hide'
         hfig.UserData.handles.hrunOneTrial.Visible = 'off';
         hfig.UserData.handles.hrunExperiment.Visible = 'off';
-    case 'show'
-        
+    case 'show'      
         hfig.UserData.handles.hrunOneTrial.Visible = 'on';
         hfig.UserData.handles.hrunExperiment.Visible = 'on';
 end
