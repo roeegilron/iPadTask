@@ -7,6 +7,7 @@ end
 
 function hfig = setupExperiment()
 addpath(genpath(fullfile(pwd,'toolboxes')));
+
 params = getparams();
 handles = struct();
 hfig = figure('UserData',handles); 
@@ -27,6 +28,8 @@ hfig.OuterPosition = [0 0 screen(3), screen(4)+40];
 undecorateFig(hfig);
 xlim([0 1]); 
 ylim([0 1]);
+%% setup timer 
+hfig.UserData.handles.sTime = tic; 
 %% setup trigger 
 hfig.UserData.handles.sp = BioSemiSerialPort();
 %% setup log file 
@@ -36,6 +39,7 @@ mkdir(fullfile('..','logs'));
 ffn = fullfile('..','logs',fn);
 fid = fopen(ffn,'w+'); 
 hfig.UserData.handles.fid = fid; 
+fprintf(fid,'time,trigger,state,trial num,mov_number,userpressed,notes\n');
 
 dat.pressed = 0;
 %% fixation 
@@ -112,9 +116,9 @@ sp  = hfig.UserData.handles.sp;
 delete(hfig); 
 try
     fclose(fid);
-    fclose(sp);
-catch
-    warning('issues with closing serial port and or log file');
+    delete(instrfindall);
+catch  
+    warning('issues with closing serial port and or log file\n');
 end
 
 end
@@ -133,6 +137,10 @@ end
 
 function runTrial(hfig,params,trialnum)
 buttonMask(hfig,'hide');
+hfig.UserData.handles.trialnum = trialnum;
+sp  = hfig.UserData.handles.sp;
+fid = hfig.UserData.handles.fid;
+sTime = hfig.UserData.handles.sTime; % tic exp started 
 %% fixation 
 moveTargetRandom(hfig);
 hsca = hfig.UserData.handles.hsca;
@@ -142,18 +150,38 @@ hfig.UserData.handles.state = 1; % fixation
 
 % wait for prep time params.trials      = 5.0;  % number of trials (blocks) 
 hsca.Visible = 'on'; % show the middle dot 
+% fprintf(fid,'trigger,state,trial num,mov_number,userpressed,notes\n');
 drawnow; 
+descrip  = sprintf('%f,%d,%s,%d,%d,%d,%s',...
+    toc(sTime),1,'hold start',trialnum,1,0,'');
+writeLog(1,descrip,fid,sp)
 waitFor(params.fixation); % fixation 
+
+drawnow; 
+descrip  = sprintf('%f,%d,%s,%d,%d,%d,%s',...
+    toc(sTime),2,'hold end',trialnum,1,0,'');
+writeLog(2,descrip,fid,sp)
 
 %% preperations 
 title(sprintf('prep trial %d started',trialnum));
 hfig.UserData.handles.state = 2; % preperation 
 htar.MarkerFaceColor = 'b'; % show target after fixation 
 htar.Visible = 'on';% show target after fixation 
+
+descrip  = sprintf('%f,%d,%s,%d,%d,%d,%f %f',...
+    toc(sTime),3,'prep start',trialnum,1,0,htar.XData,htar.YData);
 drawnow; 
+writeLog(3,descrip,fid,sp)
+
+
 waitFor(params.preperation);  % wait for prep 
+
 hsca.MarkerFaceColor = 'g';  % change fixation to go 
+descrip  = sprintf('%f,%d,%s,%d,%d,%d,%f %f',...
+    toc(sTime),4,'go cue',trialnum,1,0,htar.XData,htar.YData);
 drawnow; 
+writeLog(4,descrip,fid,sp)
+
 %% movement 
 hfig.UserData.handles.userpressed = 0;
 hfig.UserData.handles.state = 3; %movement
@@ -205,12 +233,16 @@ end
 function moveTarget(hfig)
 hfig.UserData.handles.htar.UserData.movecount = hfig.UserData.handles.htar.UserData.movecount + 1;
 m = hfig.UserData.handles.htar.UserData.movecount;
+htar = hfig.UserData.handles.htar;
 total =  hfig.UserData.handles.htar.UserData.totalmoves;
+sTime =  hfig.UserData.handles.sTime;
 if logical(hfig.UserData.handles.userpressed)
     ttluse = sprintf('mov %d/%d user pressed',m,total);title(ttluse);
     hfig.UserData.handles.userpressed = 0;
+    presstate = 1;
 else
     ttluse = sprintf('mov %d/%d user did not press',m,total);title(ttluse);
+    presstate = 10;
 end
 
 targetloc = hfig.UserData.handles.params.targetloc;
@@ -222,7 +254,14 @@ rowidx = randperm(size(postargets,1),1); % choose a random target from possible 
 hfig.UserData.handles.htar.XData = postargets(rowidx,1);
 hfig.UserData.handles.htar.YData = postargets(rowidx,2);
 
-drawnow;
+% fprintf(fid,'trigger,state,trial num,mov_number,userpressed,notes\n');
+
+
+descrip  = sprintf('%f,%d,%s,%d,%d,%d,%f %f',...
+    toc(sTime),5,'movement',hfig.UserData.handles.trialnum,m,presstate,htar.XData,htar.YData);
+drawnow; 
+writeLog(5,descrip,hfig.UserData.handles.fid,hfig.UserData.handles.sp)
+
 end
 
 function moveTargetRandom(hfig)
@@ -246,8 +285,15 @@ switch task
     case 'hide'
         hfig.UserData.handles.hrunOneTrial.Visible = 'off';
         hfig.UserData.handles.hrunExperiment.Visible = 'off';
+        hfig.UserData.handles.hTestTrigger.Visible = 'off';
     case 'show'      
         hfig.UserData.handles.hrunOneTrial.Visible = 'on';
         hfig.UserData.handles.hrunExperiment.Visible = 'on';
+        hfig.UserData.handles.hTestTrigger.Visible = 'on';
 end
+end
+
+function writeLog(trigger,event,fid,sp)
+    sp.sendTrigger(trigger);
+    fprintf(fid,'%s\n',event);
 end

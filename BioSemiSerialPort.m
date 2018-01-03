@@ -19,6 +19,7 @@ classdef BioSemiSerialPort
     % Other m-files required: none
     % Subfunctions: none
     % MAT-files required: none
+    % Toolboxes requires: instrument control toolbox 
     %
     % See also: instrhwinfo,instrreset,serial 
     
@@ -52,77 +53,30 @@ classdef BioSemiSerialPort
             disp([obj.props.keys', obj.props.values']);  % display as a cell-array
         end
         function obj = BioSemiSerialPort(~)
-            try 
-                objj = instrfind;
-                if ~isempty(objj)
-                    delete(objj);
-                end
-            catch aExceptiojn 
-                rethrow(aExceptiojn)
-            end
-            
-                
             sp = [];
-            serialInfo = instrhwinfo('serial');
-            avportst = serialInfo.AvailableSerialPorts;
             pnms = obj.getPortNames;
             % get serial port name(serial COM name different across OS's)
             if ismac % mac systems
-                % check to see if cable is connnected
-                sercheck  = cellfun(@(x) any(strfind(x,pnms.mac)),...
-                    avportst);
+                nameuse = pnms.mac;
             elseif ispc  % pc's
-                sercheck  = cellfun(@(x) any(strfind(x,pnms.pc)),...
-                    avportst);
-            elseif isunix & ~ismac % linux ?
-                sercheck  = cellfun(@(x) any(strfind(x,pnms.linux)),...
-                    avportst);
+                nameuse = pnms.pc;
             end
+            % clear any ports alraedy openeed 
+            delete(instrfindall);
             % open serial port
-            if sum(sercheck) == 0
-                warning('trigger cable not connected');
-            else
-                obj.sp = serial(avportst{sercheck},....
-                    'BaudRate',115200,...
-                    'DataBits',8,...
-                    'StopBits',1);
-                fopen(obj.sp);
-                if isvalid(obj.sp)
-                    fprintf('succesfully connected to serial port %s\n',obj.sp.Port);
-                end
+            
+            obj.sp = serial(nameuse,....
+                'BaudRate',115200,...
+                'DataBits',8,...
+                'StopBits',1);
+            fopen(obj.sp);
+            if isvalid(obj.sp)
+                fprintf('succesfully connected to serial port %s\n',obj.sp.Port);
             end
             
-        end
-        function findSerialPortName(obj)
-            fprintf('Serial port have different names in each OS\n');
-            fprintf('This process helps you discover serial port name for BioSemi Cable on your OS\n');
-            fprintf('Make sure you have your cable and its not connected OS\n');
-            takemeasure = 0;
-            while takemeasure == 0
-                takemeasure = input('is cable idsconnected?\n(1 = yes)');
-                pause(3);% makes sure if cable disconnected recently it is purged
-                instrreset
-                serialInfo = instrhwinfo('serial');
-                avportst1 = serialInfo.AvailableSerialPorts;
-            end
-            fprintf('All connected serial objects recorded\n');
-            fprintf('Now please connect BioSemi trigger cable\n');
             
-            takemeasure = 0;
-            while takemeasure == 0
-                takemeasure = input('is cable connected?\n(1 = yes)');
-                pause(3); % gives system time to load driver 
-                instrreset
-                serialInfo = instrhwinfo('serial');
-                avportst2 = serialInfo.AvailableSerialPorts;
-            end
-            fprintf('\n\n BioSemi serial port name is:\n')
-            cellfun(@(x) fprintf('%s\n',x),setxor(avportst1,avportst2))
-            fprintf('Please check one of these strings matches correct OS on lines 40-42\n')
         end
-        function wipePorts(obj)
-            instrreset
-        end
+    
         function testTriggers(obj)
             for i = 1:7
                 fwrite(obj.sp,uint8(2^i))
