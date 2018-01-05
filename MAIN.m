@@ -206,7 +206,10 @@ hfig.UserData.handles.state = 3; %movement
 
 hfig.UserData.handles.htar.UserData.movecount = 0; % have not moved. 
 hfig.UserData.handles.htar.UserData.totalmoves = params.step; % have not moved. 
-while hfig.UserData.handles.htar.UserData.movecount <= params.step
+while hfig.UserData.handles.htar.UserData.movecount < params.step
+    if hfig.UserData.handles.htar.UserData.movecount == params.step 
+        break
+    end
     mvcnt = hfig.UserData.handles.htar.UserData.movecount;
     hfig.UserData.handles.userpressed = 0; % set pressed to zero 
 %     ttluse = sprintf('mov %d/%d',mvcnt,params.step);title(ttluse);
@@ -220,6 +223,7 @@ while hfig.UserData.handles.htar.UserData.movecount <= params.step
     if ~didpress
         moveTarget(hfig)
     end
+    
 end
 htar.Visible = 'off';% hide target at end of trial 
 hsca.MarkerFaceColor = 'r';  % change fixation to stop 
