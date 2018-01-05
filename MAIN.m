@@ -28,6 +28,12 @@ hfig.OuterPosition = [0 0 screen(3), screen(4)+40];
 undecorateFig(hfig);
 xlim([0 1]); 
 ylim([0 1]);
+%% set up tone player 
+[y,Fss] = audioread('beep-03.mp3');
+hfig.UserData.handles.y = y; 
+hfig.UserData.handles.Fss = Fss;
+hfig.UserData.handles.player = audioplayer(y,Fss);
+
 %% setup timer 
 hfig.UserData.handles.sTime = tic; 
 %% setup trigger 
@@ -75,7 +81,7 @@ hrunExperiment.Margin = 15;
 hrunExperiment.ButtonDownFcn = @runExperiment;
 hfig.UserData.handles.hrunExperiment = hrunExperiment;
 
-%% run experiment 
+%% test trigger  
 hTestTrigger = text(gca,0.9,0.4,'Test Trigger');
 hTestTrigger.Rotation = 90;
 hTestTrigger.FontSize = 20;
@@ -100,6 +106,18 @@ hClose.LineWidth = 2;
 hClose.Margin = 15;
 hClose.ButtonDownFcn = @closeFigure;
 hfig.UserData.handles.hClose = hClose;
+
+%% play sound 
+hPlay = text(gca,0.05,0.2,'ps');
+hPlay.Rotation = 90;
+hPlay.FontSize = 20;
+hPlay.EdgeColor = [0.8 0.8 0.8];
+hPlay.BackgroundColor = [0.9 0.9 0.9];
+hPlay.LineWidth = 2;
+hPlay.Margin = 15;
+hPlay.ButtonDownFcn = @playTone;
+hfig.UserData.handles.hPlay = hPlay;
+
 
 drawnow;
 end
@@ -273,7 +291,6 @@ hfig.UserData.handles.htar.YData = postargets(rowidx,2);
 end
 
 function runOneTrial(obj,event)
-
 hfig = gcf; 
 buttonMask(hfig,'hide');
 runTrial(hfig,hfig.UserData.handles.params,1); 
@@ -296,4 +313,15 @@ end
 function writeLog(trigger,event,fid,sp)
     sp.sendTrigger(trigger);
     fprintf(fid,'%s\n',event);
+end
+
+function playTone(obj,event)
+hfig = gcf; 
+hfig.UserData.handles.player.play;
+sTime =  hfig.UserData.handles.sTime;
+descrip  = sprintf('%f,%d,%s',...
+    toc(sTime),6,'play tone');
+writeLog(10,descrip,hfig.UserData.handles.fid,hfig.UserData.handles.sp)
+
+
 end
